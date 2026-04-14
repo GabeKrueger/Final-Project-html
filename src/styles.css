@@ -1,0 +1,81 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #1e3c72, #2a5298);
+}
+
+.app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Card */
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  width: 90%;
+  max-width: 500px;
+}
+
+/* Titles */
+.title {
+  margin-bottom: 20px;
+}
+
+/* Form */
+.form-group {
+  margin-bottom: 15px;
+}
+
+select {
+  width: 100%;
+  padding: 8px;
+}
+
+/* Buttons */
+.btn {
+  background: #2a5298;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #1e3c72;
+}
+
+/* Answers */
+.answers {
+  display: flex;
+  flex-direction: column;
+}
+
+.answer-btn {
+  margin: 5px 0;
+}
+
+/* Timer */
+.timer {
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* Leaderboard */
+.leaderboard {
+  list-style: none;
+  padding: 0;
+}
+
+.leaderboard li {
+  background: #eee;
+  margin: 5px 0;
+  padding: 8px;
+  border-radius: 5px;
+}
