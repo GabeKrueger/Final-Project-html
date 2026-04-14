@@ -32,6 +32,11 @@ function QuizScreen({ setGameState, score, setScore }) {
 }, []);
 
   useEffect(() => {
+  if (typeof nextQuestion === "function") {
+    nextQuestion();
+  }
+}, [nextQuestion]);
+  useEffect(() => {
     const interval = setInterval(() => {
       setTimer(t => t - 1);
     }, 1000);
