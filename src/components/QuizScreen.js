@@ -1,91 +1,98 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 
-function QuizScreen({ setGameState, score, setScore }) {
+function QuizScreen({ category, difficulty }) {
   const [questions, setQuestions] = useState([]);
-  const [currentQ, setCurrentQ] = useState(0);
-  const [timer, setTimer] = useState(15);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const category = localStorage.getItem("category");
-  const difficulty = localStorage.getItem("difficulty");
 
   useEffect(() => {
-  fetch(`https://opentdb.com/api.php?amount=5&category=${category}&difficulty=${difficulty}&type=multiple`)
-    .then(res => res.json())
-    .then(data => {
-      if (!data.results) {
-        console.error("API returned no results:", data);
-        return;
+    if (!category || !difficulty) return;
+
+    const fetchQuestions = async () => {
+      setLoading(true);
+
+      try {
+
+        const response = await fetch(
+          `https://opentdb.com/api.php?amount=10&category=${category}&difficulty=${difficulty}&type=multiple`
+        );
+
+        const data = await response.json();
+
+        setQuestions(data.results || []);
+        setCurrentQuestionIndex(0);
+        setScore(0);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
       }
 
-      const formatted = data.results.map(q => {
-        const answers = [...q.incorrect_answers, q.correct_answer];
-        return {
-          question: q.question,
-          correct: q.correct_answer,
-          answers: shuffleArray(answers),
-        };
-      });
+      setLoading(false);
+    };
 
-      setQuestions(formatted);
-    })
-    .catch(err => console.error("Fetch error:", err));
-}, []);
-
-  useEffect(() => {
-  if (typeof nextQuestion === "function") {
-    nextQuestion();
-  }
-}, [nextQuestion]);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer(t => t - 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (timer === 0) nextQuestion();
-  }, [timer]);
-
-  const handleAnswer = (answer) => {
-    if (answer === questions[currentQ].correct) {
-      setScore(score + 1);
-    }
-    nextQuestion();
-  };
+    fetchQuestions();
+  }, [category, difficulty]);
 
   const nextQuestion = () => {
-    if (currentQ + 1 < questions.length) {
-      setCurrentQ(currentQ + 1);
-      setTimer(15);
-    } else {
-      setGameState("RESULTS_SCREEN");
-    }
+    setCurrentQuestionIndex((prev) => prev + 1);
   };
 
-  if (!questions.length) return <h2>Loading...</h2>;
+
+  const handleAnswer = (isCorrect) => {
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+    }
+    nextQuestion();
+  };
+
+  if (loading) {
+    return <h2>Loading questions...</h2>;
+  }
+
+
+  if (currentQuestionIndex >= questions.length) {
+    return (
+      <div>
+        <h2>Quiz Finished!</h2>
+        <p>Your Score: {score} / {questions.length}</p>
+      </div>
+    );
+  }
+
+
+  const currentQuestion = questions[currentQuestionIndex];
+
+  if (!currentQuestion) {
+    return <h2>No questions available</h2>;
+  }
 
   return (
-    <div className="card">
-      <h2 dangerouslySetInnerHTML={{ __html: questions[currentQ].question }} />
-      <div className="timer">Time: {timer}</div>
+    <div>
+      <h2>Question {currentQuestionIndex + 1}</h2>
 
-      <div className="answers">
-        {questions[currentQ].answers.map((a, i) => (
-          <button
-            key={i}
-            className="btn answer-btn"
-            onClick={() => handleAnswer(a)}
-            dangerouslySetInnerHTML={{ __html: a }}
-          />
-        ))}
+      <h3
+        dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
+      />
+
+      <div>
+        {[...currentQuestion.incorrect_answers, currentQuestion.correct_answer]
+          .sort()
+          .map((answer, index) => (
+            <button
+              key={index}
+              onClick={() =>
+                handleAnswer(answer === currentQuestion.correct_answer)
+              }
+            >
+              <span dangerouslySetInnerHTML={{ __html: answer }} />
+            </button>
+          ))}
       </div>
+
+      <p>Score: {score}</p>
     </div>
   );
-}
-
-function shuffleArray(arr) {
-  return arr.sort(() => Math.random() - 0.5);
 }
 
 export default QuizScreen;
